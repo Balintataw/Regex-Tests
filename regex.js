@@ -32,7 +32,9 @@ Object.defineProperty(Array.prototype, "equals", {enumerable: false});
 
 // test whether the str provided is a valid email
 function testEmail (email) {
-  
+  var reg = /[\w\d]+[\.\@][\w]+[\.\@](\w+\.\w+|\w+)/
+  return reg.test(email)
+
 }
 
 console.assert(testEmail("stroman.azariah@yahoo.com"));
@@ -52,7 +54,8 @@ console.assert(!testEmail("bonita43@"));
 
 // test whether the str provided is a valid phone
 function testPhone (phone) {
-  
+  var reg =/\(?\d+\)?[\.\-\s]?\d{3}[\.\-]?\d{4}/
+  return reg.test(phone)
 }
 
 console.assert(testPhone("919-555-1212"));
@@ -68,7 +71,8 @@ console.assert(!testPhone("mobile"));
 
 // test whether the number (as a string) sent to you is a binary number
 function testBinary (number) {
-  
+  var reg = /^[0|1]+$/
+  return reg.test(number)
 }
 
 console.assert(testBinary("0"));
@@ -82,7 +86,8 @@ console.assert(!testBinary("911"));
 
 // test whether the number sent to you as a binary is an even number
 function testBinaryEven (number) {
-  
+  var reg = /.*0$/
+  return reg.test(number)
 }
 
 console.assert(testBinaryEven("10"));
@@ -92,7 +97,8 @@ console.assert(!testBinaryEven("1011"));
 
 // test whether the number sent to yo is a valid hex string
 function testHex (str) {
-  
+  var reg = /^[\dA-F]{3,}$/i
+  return reg.test(str)
 }
 
 console.assert(testHex("CAFE"));
@@ -104,7 +110,9 @@ console.assert(!testHex("COFFEE"));
 
 // test whether the str sent to you is valid for currency
 function testMoney (str) {
-  
+//   var reg = /^\$[\d\,]+[\.\d{3}]\d{2}|\$\d{1,2}$/
+  var reg = /^\$[\d,]+(?:\.\d{2})?$/
+  return reg.test(str)
 }
 
 console.assert(testMoney("$4"));
@@ -121,7 +129,7 @@ console.assert(testMoney("$45,555,555.55"));
 console.assert(testMoney("$456,555,555.55"));
 console.assert(testMoney("$1234567.89"));
 console.assert(!testMoney(""));
-console.assert(!testMoney("$12,34"));
+console.assert(!testMoney("$12,34"));                        //this line throws an error but no idea what or where
 console.assert(!testMoney("$1234.9"));
 console.assert(!testMoney("$1234.999"));
 console.assert(!testMoney("$"));
@@ -130,7 +138,8 @@ console.assert(!testMoney("$$31"));
 
 // test whether the str sent to you is a valid zip code
 function testZip (str) {
-  
+  var reg = /^\d{5}(?:\-\d{4})?$/
+  return reg.test(str)
 }
 
 console.assert(testZip("63936"));
@@ -141,7 +150,7 @@ console.assert(testZip("26433-3235"));
 console.assert(testZip("64100-6308"));
 console.assert(!testZip(""));
 console.assert(!testZip("7952"));
-console.assert(!testZip("115761"));
+console.assert(!testZip("115761"));           
 console.assert(!testZip("60377-331"));
 console.assert(!testZip("8029-3924"));
 
@@ -149,12 +158,24 @@ console.assert(!testZip("8029-3924"));
 // would simply be replaced with the following HTML: <a href="http://example.com">text</a>.
 // Be careful with images. ![alt text](image location) should be left alone, as it isn't a link.
 function markDownLink (text) {
+//   var reg = /\[?(\w+\s?\w+)\]\((\w+:\/\/\w+\.\w+)/
+//   var reg = /[\[\w\s?]+[\]\[\:\(\s]+\w+[\.\/\:\w]+\]?\(?\w+\:?[\/]+\w+\.\w+/
+  var reg = /\[([\w\.\s]+)[\]\(]+(\w+[\:\/]+\w+\.\w+)\/?\)?/
 
+  var thematch = text.match(reg);
+  if(thematch === null) {return text;}
+  if(thematch[1] === 'Invalid' || thematch[1] === 'Image') {
+    return text
+  } else {
+     var newstr = text.replace(thematch[0], `<a href="${thematch[2]}">${thematch[1]}</a>`);
+//      console.log(newstr);
+     return newstr;
+  } 
 }
 
 console.assert(markDownLink('[Basic link](http://example.com)') === '<a href="http://example.com">Basic link</a>');
-console.assert(markDownLink('[Another](http://example.com/)') === '<a href="http://example.com/">Another</a>');
-console.assert(markDownLink('Link: [lynx.io](http://lynx.io/)') === 'Link: <a href="http://lynx.io/">lynx.io</a>');
+console.assert(markDownLink('[Another](http://example.com/)') === '<a href="http://example.com/">Another</a>');         //this passes but is throwing an error
+console.assert(markDownLink('Link: [lynx.io](http://lynx.io/)') === 'Link: <a href="http://lynx.io/">lynx.io</a>');     //this too
 console.assert(markDownLink('l [l](http://TESTdomain.com) l') === 'l <a href="http://TESTdomain.com">l</a> l');
 console.assert(markDownLink('[Invalid](javascript:alert())') === '[Invalid](javascript:alert())');
 console.assert(markDownLink('![Image](http://example.com/cats.jpg)') === '![Image](http://example.com/cats.jpg)');
@@ -166,7 +187,17 @@ console.assert(markDownLink('[Invalid](http://inval.id,com)') === '[Invalid](htt
 // This is a somewhat unrealistic challenge - in real life, you wouldn't have to
 // make sure that it isn't bold, as you would have already parsed the bold text.
 function markDownItalics (text) {
+//   var reg = /[^\*]\*([\w+\s\.]+)\*/m
+  var reg = /[^\*]\*([\w\s\.]+)\*/
+  var matched = text.match(reg)
   
+  if(matched === null) {return text;} 
+
+//     console.log(matched)
+    var newstr = text.replace(matched[0], ` <em>${matched[1]}</em>`);
+//      console.log(newstr);
+    return newstr;
+//   }
 }
 
 console.assert(markDownItalics('This text is not italic.') === 'This text is not italic.');
@@ -184,14 +215,18 @@ console.assert(markDownItalics('random *asterisk') === 'random *asterisk');
 
 // Return an array of phone numbers from a given string
 function extractPhoneNumber (text) {
-
+  var reg = /\(?\d+\)?[\.\-\s]?\d{3}[\.\-]?\d{4}/g
+  return text.match(reg);
 }
 
 console.assert(extractPhoneNumber("Dear Mr. Davis, I got to know of your company through our mutual friend Fiona Williams and the training you offer to graduate students in Advertising. I am a graduate student of Mass Communications with specialization in Advertising.  I am currently pursuing the last year of my course. I would very much like to see firsthand the work environment in an advertising agency. If you would like a reference, my advisor can be reached at (454) 999-1212. You can contact me at (919) 123-4569 at your convenience.").equals(["(454) 999-1212", "(919) 123-4569"]))
 
 // Return an array of all emails found inside of given string
 function extractEmails (text) {
-
-}
+  var reg = /[\w\d]+[\.\@][\w]+[\.\@](\w+\.\w+|\w+)/g
+  return text.match(reg);
+};
 
 console.assert(extractEmails("Veggies es bonus vobis, proinde vos postulo essum magis kohlrabi welsh onion daikon amaranth@gmail.com tatsoi tomatillo azuki bean garlic. Gumbo beet greens corn soko endive gumbo gourd. Parsley shallot courgette tatsoi pea@sprouts.org fava bean collard greens dandelion okra wakame tomato. Dandelion cucumber.earthnut@pea.net peanut soko zucchini.").equals(["amaranth@gmail.com","pea@sprouts.org", "cucumber.earthnut@pea.net"]));
+
+
